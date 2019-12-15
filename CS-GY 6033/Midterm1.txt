@@ -190,11 +190,11 @@ log(n!) = θ(nlogn)
 counting sort		O(n)+O(k)	//k is for #different-elements, stable sort
 we need a pointer to last element in the linked list otherwise we will take O(n^2) when we do the insertion to the second array
 
-radix sort		O(nk)		//k is for the alphabet size
+radix sort		O((n+d)l)
 assume length of elements(#digits) is l, alphabet size of the digit is d(e.g. binary -> d=2)
 A Failure Idea:
 We will first sort the most significant digit(the left-most digit) and divide it into d groups, repeat the sorting in each group
-time complexity of this idea: O((n + d)l)
+time complexity of this idea: O((n + d)l), However it could take O(d·n) if bad.
 
 Radix sort processes from the least significant digit
 
