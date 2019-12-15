@@ -1,0 +1,205 @@
+#############################################################
+
+Algorithm	            Time Complexity
+		Best		Average		Worst	
+Selection Sort	Ω(n^2)		θ(n^2)		O(n^2)
+Bubble Sort     Ω(n)		  θ(n^2)		O(n^2)
+Insertion Sort	Ω(n)		  θ(n^2)		O(n^2)
+Heap Sort       Ω(nlogn)	θ(nlogn)	O(nlogn)
+Quick Sort      Ω(nlogn)	θ(nlogn)	O(n^2)
+Merge Sort      Ω(nlogn)	θ(nlogn)	O(nlogn)
+Bucket Sort     Ω(n+k)		θ(n+k)		O(n^2)
+Radix Sort      Ω(nk)		  θ(nk)		  O(nk)
+
+#############################################################_
+# Refer to Geeksforgeeks
+
+--*Notes of NYU CS-GY6033*--
+n^n > n! >   k^n(k>1)   >    n^k    >   (logn)^k   > O(1)
+           exponential   polynomial   power of logs  constants
+           1.1^n	 n,\sqrt{n}
+
+prove θ(n)
+O -> f(n) <= c1 · n for n>n_1; c=x, n_1=y work
+Ω -> f(n) >= c2 · n for n>n_2; c=m, n_2=n work
+
+not to prove \Theta -> Find a contradiction
+
+o(n) means that f(n) meet f(n)=O(n) & f(n)≠θ(n)
+ω(n) as well.
+
+a^{logn} = n^{loga}
+
+[3.exaggreate-and-simplify] P32 exaggreate less & underestimate less
+
+##mergesort T(n)		#T is for time
+1. Divde	θ(1)
+2. Conquer	θ(1) + 2T(n/2)
+3. Merge	θ(n)
+T(n) = 2T(n/2) + θ(n)
+
+[Recurison tree method]
+T(n) = 2T(n/2) + cn
+            |               cn --------------------------cn
+            |            /       \
+ logn levels|      cn/2            cn/2 -----------------cn
+            |      /  \            /  \
+     +      | T(n/4)  T(n/4)  T(n/4)  T(n/4) ------------cn
+            |
+            |
+leaves level  #n leaves: c2, c2, c2 ...
+= Total time = c2·n + cnlogn = θ(nlogn)
+
+[Another complicated example for recursion tree]
+T(n) = T(n/4) + T(n/2) + n^2
+                 n^2  -------------------------n^2
+               /     \
+     (n/4)^2           (n/2)^2  ---------------5n^2/16
+      /    \            /   \
+(n/16)^2  (n/8)^2  (n/8)^2  (n/4)^2  ----------25n^2/256
+
+
+-----------------------------------------------(5/16)^k · n^2
+T(n) <= n^2 · [1+5/16+25/256+ ... + (5/16)^∞] < n^2 · [1+1/2+(1/2)^2 ... ] = 2n^2
+
+[Substitution(induction) method]
+T(n) = 2T(n/2) + θ(n) = 2T(n/2) + cn
+1) Guess the answer (enumerate some examples and guess the answer)
+Inductive hypothesis: for all k<n, T(k) <= dklogk		#Don't use Big-O during induction
+2) Substitute
+T(n) <= 2d(n/2)log(n/2) + cn (using k = n/2)
+3) Algebra
+T(n) <= dnlogn - dnlog2 + cn <= dnlogn - (dn-cn) <= dnlogn (if d>=c, base case)
+
+[Fixation when Hypothesis Failed]
+T(n) = 4T(n/2) + n
+Hypothesis T(n) <= ck^2 failed cause that at last we get T(n) = cn^2 + n and n is postive
+1) New Hypothesis
+T(k) <= ck^2 - dk
+2) Substitue 
+T(n) <= 4[c(n/2)^2 - d(n/2)] + n = cn^2 - 2dn + n = cn^2 - dn - dn + n = cn^2 - dn - (d-1)n if d>=1 and c>d
+
+##Master Method
+T(n) = aT(n/b) + f(n)		#if a or b is not contant, we may not use master method to calculate the result of T(n)
+1. T(n) = θ(n^{\log_b a})	#leaf level dominates polynomically
+2. T(n) = θ(f(n) · logn)	#all levels ~ same, f(n) = (logn)^k · n^{\log_b a} -> f(n) ~ #leave -> T(n) = θ((logn)^k · n^{\log_b a} · logn) =  θ((logn)^{k+1} · n^{\log_b a}) =  θ(f(n)logn)
+*CLRS P95
+3. T(n) = θ(f(n))		#root dominates polynomically
+
+T(n) = 256 · T(n/4) + Θ(n^4 · (logn)^4) -> T(n) = θ(n^4 · (logn)^5)
+
+##Selection-deterministic
+Q:Given n unsorted elements, find the k-th smallest.
+select(r, 1...n)	//find r-th smallest # within arr[1...n
+[
+a. form n/5 groups of 5 elemnts					//the last group can have < 5		# n/5 · 5log5 = nlog5 ~ θ(n)
+b. find median in each group and re-organize			//brute force				# n/5 · θ(1) = θ(n)
+c. recursively find x = median-of-median and re-organize						# T(n/5) + θ(n)
+]
+selection-randomized (select random element x, recurse the one side part)
+#big-part = #small-part = 3 · (n/5)/2 >= 3n/10 >= n/4
+If target < x, recurse the part except big-part -> 1-n/4 = 3n/4						# as well as target > x
+So, T(3n/4) or prcisely T(3n/10)
+T(n) = θ(n) + θ(n) + [T(n/5) + θ(n)] + T(3n/4) = T(n/5) + T(3n/4) + θ(n)
+Claim T(n) <= cn
+T(n) <= cn/5 + 3cn/4 + dn <= 19cn/20 + dn = cn - (cn/20 - dn) <= cn if c>20d
+
+What if we form n/k groups of k elements, and k is not a small constant value?
+Cause that when we find the median of each group, we need to sort an array with size of k. So, the sorting takes klogk time and there are n/k groups, so it totally takes n/k · klogk time
+T(n) = T(3n/4) + T(n/k) + θ(n) + n/k · klogk = T(3n/4) + T(n/k) + O(nlogk)
+
+##hashing
+hashing can mantain O(1) in 3 main operations in average. (search, insert, delete)
+Assume that n = #keys, m = #slots
+
+We need to design a hash() which can meet the following requirements:
+1. minimize collisions
+2. no empty slots
+
+[Chaining method] to solve the problem that many keys map to the same slot. (n>m)
+Insert		θ(1)
+Search/Delete	O(n)	//linked-list size
+In chaining method, we should evenly spread the Set to Table.
+
+Average #keys per slot = load factor = α = n/m 	//average size of linked list
+//simple uniform hashing, probablity of two given keys collide = 1/m
+
+Expected time seach/delete in chaining method:
+E[search/delet] = θ(1+α)
+//1 is for the time of evaluation of hashing(); α is for the time of scanning in the linked-list
+if α = θ(1) then we will get better expected time in hashing built by chaining method, it means that if size of set eqaul to the size of table. We will get O(1) in operations.
+
+[hashing functions]
+division method		h(k) = k mod m		#Fails if m has a small divisor. e.g. if both m and keys are even.
+if m = 2^r, then the division method works.
+
+[open-addressing hashing]
+assume that n<=m and we need to avoid auxilliary linked list
+creat a permutation of slots to try in the form of probe sequence
+
+slot with deleted mark will increase the time of searching
+
+[Typical probing sequence generation alogrithm]
+Linear probing		h(k,i) = (h(k,0) + i) mod m		Drawback: create a cluster and decrease the effective of searching = Size(cluster)/m
+Quadratic probing	h(k,i) = (h(k,0) + ci + di^2) mod m	Drawback: cluster also
+#Both of the above will produce m probe sequences in total
+Double hashing		h(k,i) = (h1(k) + ih2(k) mod m		ih2(k) means random offset according to the last slot
+#Double hashing produces m^2 probe sequences so that the hashing method will make the process more random and minimize the prbability of collision
+
+cause that less α, less collision and we make it in open-addressing (n<m) -> less probes, higher effective of operations.
+E[#probes] <= 1/(1-α) = m/(m-n)
+so if n<<m, E[#probes] = O(1)		e.g. n = m/2 -> 2 probes; 90% full table -> 10 probes.
+Proof: E[#probes] = 1 + n/m(1 + (n-1)/(m-1)(1 + (n-2)/(m-2)(...(1 + 1/(m-n)))) <= 1 + α + α^2 + ... = 1/(1-α)
+1 is for an 100% unsuccessful search.
+n/m is for probablity of next successful search. The rest of the above formula is according to the lemma of expected value (E = probablity · number).
+
+[Why open-addressing is better than chaining]
+1. We aren’t allowed to use any extra space (such as a linked list), to store keys.
+2. It suces to make sure that the table size is a constant multiplicative factor of the number of keys, assuming we have an excellent hash function.
+3. By avoiding the use of pointers that are used in linked lists in chaining, we are able to store more keys than chaining.
+
+##heapsort
+heapify		O(logn)
+heapsort	O(nlogn) 	#n heapify
+#if we extract the max/min and swap it with the leaf so that we can maintain the space complexity in O(i) cause it a in-place work.
+
+[build a heap]
+1. forward method		#O(nlogn)
+start with unsorted elements
+2. reverse method		#O(n)		#In-place work, O(1) space complexity
+Heapify from the last leaf to the root according to the order of from left to right at each level.
+The subtree of the node we are now going to heapify is a heap already. So that we just swap the node with the subtree heap.
+Time for the current node = O(height(x)) = O(logn) -> total time is O(nlogn) *roughly
+Σ <= n/2 · 1 + n/4 · 2 + n/8 · 3 + ... + 2 · ((logn)-1) + 1 · logn  *#nodes · height
+= Σ(1~logn) n/2^h · h = nΣ(1~logn) h/2^h = O(n)
+
+#The forward method allows us to build a heap on all data that has been read, regardless of how much data there is still to see. In other words, it’s good for streaming
+
+##Sorting lower bound
+assume height of descision tree is h
+n! <= #leaves <= 2^h
+n! <= 2^h
+h >= log(n!) = log(n/e)^n = nlogn - nloge = nlogn - θ(n)
+h = Ω(nlogn)
+
+log(n!) <= log(n^n) = nlogn -> log(n!) = O(nlogn)
+log(n!) = log(n · (n-1) · (n-2)  ... 1) = log(n · 1 · (n-1) · 2 ... (n-n/2) · (n-n/2)) >= log(n · n · n ... n) = log(n^(n/2)) = n/2 · logn = Ω(nlogn)
+log(n!) = θ(nlogn)
+
+##Radix-counting sort
+counting sort		O(n)+O(k)	//k is for #different-elements, stable sort
+we need a pointer to last element in the linked list otherwise we will take O(n^2) when we do the insertion to the second array
+
+radix sort		O(nk)		//k is for the alphabet size
+assume length of elements(#digits) is l, alphabet size of the digit is d(e.g. binary -> d=2)
+A Failure Idea:
+We will first sort the most significant digit(the left-most digit) and divide it into d groups, repeat the sorting in each group
+time complexity of this idea: O((n + d)l)
+
+Radix sort processes from the least significant digit
+
+##Indicator Random Variables
+E = Σ Y·P(X=Y)
+Linearity of expectation: E(c1·X + c2·Y) = c1·E(X) + c2·E(Y)
+Define random variable Xi = {1, if targets; 0, otherwise}
+E = X1 + X2 + X3 + ... + Xn
