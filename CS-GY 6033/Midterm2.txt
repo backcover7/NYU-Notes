@@ -67,8 +67,8 @@ any algorithm producing tree shape all cost Ω(nlogn) time
 
 BSTsort ~ quicksort: exactly same comparison but in different orders
 randomized version BST
-BST build			θ(n)
-insertion			θ(nlogn)
+BST build			θ(nlogn)
+insertion			θ(logn)
 
 E[depth] = θ(logn) -> balanced BST? No
 average_depth_of_unbalanced_BST < 1/n · (n·logn + √n(√n+logn)) = O(logn)
