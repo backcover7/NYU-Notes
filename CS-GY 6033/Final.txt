@@ -1,0 +1,249 @@
+##Amortization
+[Aggregate analysis]
+Get the total time complexity in the worst case and then get the amortized cost per operation.
+
+[Accounting]
+Save the difference and use it later per operation
+exaggreate/save as little as possible ~ minimize f(n)
+amortized cost(n·f(n)) >= true cost
+
+push/pop/multipop	Contribution per element (<= 2) * n = 2n ~ O(n)
+
+[Potential method]
+Start with data structure D_0, find something changes a lot in this data structure in such case
+Operation i: D_{i-1} -> D_i			#cost c_i
+
+\hat{c_i} = c_i + φ_i - φ_{i-1} = c_i + Δφ_i
+if Δφ_i > 0, \hat{c_i} > c_i, storing work
+if Δφ_i < 0, \hat{c_i} < c_i, release work
+
+Σ\hat{c_i} = φ_n - φ_0 + Σc_i >= Σc_i		#no underestimate, φ_n needs to be greater than φ_0 -> #φ_i >= 0; φ_0 = 0 -> φ_n >= 0
+However, φ_n could be less than φ_0 in some cases. If so, this kind of case should be analyzed further.
+
+Σc_i <= Σ\hat{c_i} <= n·max(\hat{c_i})
+
+#Dynamic tables
+start with array with size 1; everytime it fills up, double the size. There will be n insertions totally
+[Aggregate analysis]
+Everytime doubling, except for normal 1 cost insertion, another doubling operation need to be add.
+Σc_i <= 1·n + 2^0(1-2^n)/1-2 <= n + (n+n) = 3n		//(n+n): first n is the exaggreation of the polynomial exclude the last term, and the last n is the last term.
+
+[Accounting]							#To make things simpler in accounting we often just assume that we start from an empty structure so there is no need to overdraw.
+Assume \hat{c_i} for each insertions cost 3 = 1 insetion for itself + 1 copy cost in double operation for itself + 1 copy cost in double operation for another element which is already in the array.
+In the first operation the amortized cost is only 2 rather than 3 because there is no another element in the array need to be copied in double operation
+
+[Potential method]						#Trick: After we do the operation with largest cost, φ should be 0.
+1. define the a complicate/costly operaion for c_i 		#In this case is the insertion each time： 1 or i(doubling)
+2. find someting that changes a lot in the previous data structure and φ_i >= 0 & φ_0 = 0
+let φ_i = 2(#items in table) - (size of table)
+type1: c_1 = 1 (no doubling)
+\hat{ci} = 1 + (2i-size_i) - (2(i-1)-size_{i-1}) = 3
+type2: c_1 = i (doubling)
+\hat{ci} = 1 + (2i-size_i) - (2(i-1)-size_{i-1}) = 3
+\hat{ci} = 1 + (2i-2(i-1)) - (2(i-1)-(i-1)) = 3i - 3i + 3 = 3
+Σ\hat{ci} = 3n
+
+##Graph
+undirected
+ajacency matrix		size: |V|^2
+ajacency list		size: |V|+2|E|
+
+directed
+ajacency matrix		size: |V|^2
+ajacency list		size: |V|+|E|
+
+Summary:
+ajacency matrix		size: O(|V|^2)
+ajacency list		size: O(|V|+|E|)
+
+If dense graph, |E|~|V|^2
+
+query if neighbor:
+Matrix			O(1)
+List			O(|V|)		#O(degree(v))
+
+enumerate neighbors
+Matrix			O(|V|)
+List			O(degree(v))
+
+#The following algorithm need to mark the visited nodes
+[BFS]			O(E)		#in a connected graph
+			O(V+E)		#in a no-connected graph
+
+1. mark s
+2. check Adj[s]: v1,..,vk:
+  if vi=t, Done
+  if vi≠t, mark as visited and put it in queue Q
+3. While Q is not empty
+  remove first vertex vf in Q
+  check Adj[Vf]: u0,..,u3
+    if ui=t, Done
+    if ui≠t, mark as visited and put it in Q
+
+
+Data structure: queue
+
+changing of the queue:
+v1 v2 v3 v4
+v2 v3 v4 u1 u2 u3
+v3 v4 u1 u2 u3 u4 u5
+v4 u1 u2 u3 u4 u5 u6 u7 u8
+u1 u2 u3 u4 u5 u6 u7 u8 u9 u10
+...
+
+
+[DFS]			O(E)		#in a connected graph
+			O(V+E)		#in a no-connected graph OR in a directed graph
+
+1. Follow an unvisited path for as long as possible.
+2. When you reach a vertex with only previous-visited vertex, back up from where you came from & try again.
+
+DFS(s)
+mark s
+for every neighbor vi of s	//scan Adj[s]
+  if vi=t, Done
+  if vi is unmarked
+    set parent(vi)->s
+    set depth(vi)->1+depth(s)
+    DFS(vi)
+
+Data structure: stack
+
+##Minimum spanning tree
+tree + span all vertices + min sum of weights
+
+1. Any critical edges(in terms of graph connectivity) must be in MST
+2. For any vertex v with 2 incident edges, the smaller edge e must be in the MST
+#If e not used, v is a leaf in a MST. So swap to get the better tree.
+#This holds for all vertices: if MST is built without the edge, then putting the edge in the produced MST will create a cycle. Delete the heaviest edge in the cycle to form a better tree. [CONTRADICTION]
+3.Cut lemma
+For any cut, the min-weight edge crossing the cut must be in the MST
+Proof: Assume (u,v) is the min-weight edge and suppose it is not in the MST. After the MST is built then insert (u,v) it will form a cycle. Remove the heaviest weight in the cycle to imporve the tree. [CONTRADICTION]
+ 
+[Kruskal's algoritm]							#O(ElogV)
+1. make forest of vertices						O(V)
+2. sort the edges by weight						O(ElogE)=O(ElogV^2)=O(ElogV)
+3. scan sorted list.
+If endpoints of the edge are in different component,			E·O(1)=O(E)
+add the edge into the MST,						O(1)
+and merge the endpoint to the same component.				V·O(logV)=O(VlogV)=O(ElogV)
+#Proof: if we do not add the light edge in the list to the MST then some higher weight edge will be added in and it will be replaced by the lighter one.
+
+Store each component as a linked list and every node point to the same representative. Query the representative to check if they are in the same component	O(1)
+Merge needs to make all of the nodes in smaller component point to the bigger one's representative.								n·O(logn)
+
+[Prim's algorithm]							#O(V^2) or O(ElogV)
+*Using the cut lemma
+
+Principle: Given a subtree T of MST, the "lightest" edge connecting to a vertex not in T can be added to T
+
+1. start with any vertex s and set w(s)=0				O(1)
+2. set w(≠s)=∞ and put all in priority queue				O(V)
+3. while priority queue is not empty					|V| rounds
+x = extract-min from queue						O(logV)
+add lightest edge from x to T into the current T & mark x in T		O(degree(x))			#this step need to enumerate neighbors and this is different in list&matrix
+for each unmarked neighbor of x, if w(q) > w(q,x) then decrease		O(degree(x))·O(logV)		#O(logV) is the weight update operation of neighbors of x cause this step will change the position of vertex in queue. Alsothis step need to enumerate the neighbors and this is different in list&matrxi
+
+O(1) + O(V) + Σ{x∈V}(O(logV)+O(degree(x))+O(degree(x))·O(logV))
+= O(V) + O(VlogV) + O(E) + O(ElogV) ~ O(ElogV)			#using ajacency list. Cause that in ajacency list, enumerating all of the neighbors cost O(E)
+
+* change priority queue to Fibonacci heap, total cost is O(E+VlogV) casue we cost only O(degree(x))·O(1) when update the score of neighbor
+
+If we use ajacency matrix
+O(1) + O(V) + Σ{x∈V}(O(V)+O(V))
+= O(V) + O(V^2) + O(V^2) ~ O(V^2)				#Cause no priority queue, so no insertion to the tree, just O(V) for enumerating the neighbors
+O(V^2) time & space by ajacency matrix
+
+Use list or matrix depends on sparse or dense:
+Ajacency List		#Good for sparse graph
+Ajacency Matrix		#Good for dense graph
+
+##Single source shortest paths
+1. no cycles in sssp
+2. Negative weights [OK] but no negative cycle
+3. shortest path s->v->t contains shortest path s->v & shortest path v->t
+
+DAG contains mutliple different shortest paths from s to t.
+
+score(t) could be improved if score(v)+score(v,t)<score(t) => The process of the improvement is Relax(v,t)			#meantime, parent(t)=v
+
+[Relax order lemma]
+If we relax edges in the correct order then we will correctly compute the score of the target vertex.
+Proof:
+If we want to get the best score of target vertex we need to get the best score of the second last vertex because the shortest path from source to target is the sum shortest path from source to the second last vertex and the shortest path from the second last vertex to the target. Then we recursively get the shortest path of the second last vertex, so that if we relax in the order of the shortest path then we will finally compute the correct best score of target vertex.
+
+
+[Dijkstra]								#no negative weights					#O(V^2) or O(ElogV)
+1. start with any vertex s and set w(s)=0
+2. set w(≠s)=∞ and put all in priority queue
+3. while priority queue is not empty
+x = extract-min from queue
+add lightest edge from x to T into the current T & mark x in T
+for each unvisited neighbor of x, Relax(x, v)
+
+Proof:
+We get the shortes path by taking the vertex with smallest score. Any other path which makes the vertex reachable will cost more
+*Class Notes P21
+
+[Bellman-Ford]								#support negative weights but no negative cycles	#O(V·E)
+1. set score(s)=0; set score(≠s)=∞; set parent(≠s)=null
+2. for i=1 to V-1, Relax every edge in the graph			#each iteration
+
+https://www.youtube.com/watch?v=FtN3BYH2Zes
+
+What if the graph can be relaxed more after V-1? There is a negative cycle in the graph.
+
+Proof:
+If you relax edges in the correct order, you are guaranteed to get the shortest paths. With Bellman-Ford, you may end up relaxing edges more times than necessary, but it guarantees that you end up with the shortest paths.
+
+[SSSP for DAG]
+1. Topological sort							O(V+E)
+2. For each v in topological order, relax all outgoing edges		O(V+E)		if only want to get one sssp tree from the source, just do the DFS from the s which cost O(E) only.
+
+##Topological								O(V+E)
+DAG: directed acyclic graph
+sort/output by finish time
+
+Run DFS of edges which takes O(E) in any order and add a node which only has a preivous-visited vertex into a list which takes O(V).
+
+Proof:
+If x->y is implied in a DFS tree
+then y was explored after x
+So, y finished first
+
+If x->z not in tree & not implied
+then x was explored after z (otherwise we would have x->z)
+So z fininshed first
+
+https://www.youtube.com/watch?v=ddTC4Zovtbc
+A set for visited vertex and a stack for the order
+
+##Strong connected graphs component
+Divide a graph into several graphs which are Strong connected graphs each, and then the new graph is DAG
+
+Finding strong connected graphs components
+1. DFS from arbitrary vertex. Add the vertext which only has a previous-visited vertex into a list.
+2. DFS in the reverse order of the list. The start vertex to the finished vertex will be in the same component.
+
+##NP=P?
+T(verify)=o(n^c·T(solve))
+T(solve)=ω(n^c·T(verify))
+
+P problem can be solved in polynomial time
+NP problem can be verified in polynomial time
+If NPC problem is solved then all of the NP problem will be solved cause NPC problem is the core of all of the NP problem.
+NP-hard problem can be excluded the error solution in polynomial time
+NPC belongs to NP-hard
+
+https://www.youtube.com/watch?v=YX40hbAHx3s
+
+[NP-Reduction]
+A<=B: in polynomial time, A can be reduced to B
+B is at least as hard as A
+Solving B in poly-time -> Solving A in poly-time
+
+If {every time in NP} <= B or {any NPC problem} <= B, then B is NP-hard. And if B is in NP, then B is NPC.
+
+If A&B are NPC then A<=B & B<=A ~ A=B 
+
+NPC problem can be tranformed from another NPC problem
