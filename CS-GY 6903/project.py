@@ -30,6 +30,7 @@ def correct(plaintext):
                 score = difflib.SequenceMatcher(None, p, w).quick_ratio()
                 if score > max:
                     candidate = p
+                    max = score
             w = candidate
     for w in plain_wordList:
         result = result + w + ' '
@@ -52,12 +53,11 @@ def length(Ciphertext):
             CoincidenceIndex += Numerator/(len(PresentCipherList) * (len(PresentCipherList)-1))
 
         Average=CoincidenceIndex / Keylength
-        Keylength += 1
-
+        
         if Average > 0.06:
             break
 
-    Keylength -= 1
+        Keylength += 1
     return Keylength
 
 def space(letter, m):
