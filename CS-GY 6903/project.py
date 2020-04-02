@@ -31,7 +31,9 @@ def correct(plaintext):
                 if score > max:
                     candidate = p
                     max = score
-            w = candidate
+            plain_wordList[plain_wordList.index(w)] = candidate
+            max = 0
+            candidate = ''
     for w in plain_wordList:
         result = result + w + ' '
     return result[:-1]
